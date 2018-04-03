@@ -41,7 +41,7 @@ module StellarCoreCommander
     def launch_state_container
       $stderr.puts "launching state container #{state_container_name} from image #{@state_container.image}"
       @state_container.launch(%W(-p #{postgres_port}:5432 --env-file stellar-core.env),
-       %W(postgres -c fsync=off))
+       %W(postgres --fsync=off --full_page_writes=off))
     end
 
     Contract None => Any
