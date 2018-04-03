@@ -134,6 +134,7 @@ module StellarCoreCommander
       # state
       @unverified   = []
       @sequences    = Hash.new {|hash, account| hash[account] = (account_row account)[:seqnum]}
+      @is_setup     = false
 
       if not @quorum.include? @name
         @quorum = @quorum + [@name]
@@ -302,7 +303,11 @@ module StellarCoreCommander
 
     Contract None => Any
     def set_upgrades
-      server.get('/upgrades?mode=set&upgradetime=1970-01-01T00:00:00Z&maxtxsize=10000&protocolversion=10')
+      response = server.get('/upgrades?mode=set&upgradetime=1970-01-01T00:00:00Z&maxtxsize=10000&protocolversion=10')
+      response = response.body.downcase
+      if response.include? "exception"
+        $stderr.puts "Did not submit upgrades: #{response}"
+      end
     end
 
     Contract Num, Symbol => Any
@@ -312,11 +317,15 @@ module StellarCoreCommander
 
     Contract None => Hash
     def info
+      info!
+    rescue
+      {}
+    end
+
+    def info!
       response = server.get("/info")
       body = ActiveSupport::JSON.decode(response.body)
       body["info"]
-    rescue
-      {}
     end
 
     Contract String => Any
@@ -803,6 +812,14 @@ module StellarCoreCommander
       set_upgrades
     end
 
+    Contract None => Any
+    def setup
+      if not @is_setup
+        setup!
+        @is_setup = true
+      end
+    end
+
     # Dumps the database of the process to the working directory, returning the path to the file written to
     Contract None => String
     def dump_database
@@ -816,18 +833,29 @@ module StellarCoreCommander
     end
 
     Contract None => Any
-    def setup
+    def setup!
       raise NotImplementedError, "implement in subclass"
     end
 
     Contract None => Any
     def wait_for_http
+      wait_for_port http_port
+
       @wait_timeout.times do
-        return if http_port_open?
+        return if info! rescue sleep 1.0
+      end
+
+      raise "failed to get a successful info response after #{@wait_timeout} attempts"
+    end
+
+    Contract Num => Any
+    def wait_for_port (port)
+      @wait_timeout.times do
+        return if port_open?(port)
         sleep 1.0
       end
 
-      raise "http port remained closed after #{@wait_timeout} attempts"
+      raise "port #{port} remained closed after #{@wait_timeout} attempts"
     end
   end
 end

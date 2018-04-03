@@ -20,9 +20,7 @@ module StellarCoreCommander
       super
 
       @heka_container = Container.new(@cmd, docker_args, "stellar/heka", heka_container_name)
-      @state_container = Container.new(@cmd, docker_args, params[:docker_state_image], state_container_name) do
-        dump_database
-      end
+      @state_container = Container.new(@cmd, docker_args, params[:docker_state_image], state_container_name)
       @stellar_core_container = Container.new(@cmd, docker_args, params[:docker_core_image], container_name) do
         dump_data
       end
@@ -42,7 +40,8 @@ module StellarCoreCommander
     Contract None => Any
     def launch_state_container
       $stderr.puts "launching state container #{state_container_name} from image #{@state_container.image}"
-      @state_container.launch(%W(-p #{postgres_port}:5432 --env-file stellar-core.env), [])
+      @state_container.launch(%W(-p #{postgres_port}:5432 --env-file stellar-core.env),
+       %W(postgres -c fsync=off))
     end
 
     Contract None => Any
@@ -66,13 +65,15 @@ module StellarCoreCommander
     end
 
     Contract None => Any
-    def setup
+    def setup!
       write_config
     end
 
     Contract None => Any
     def launch_process
+
       launch_state_container
+      wait_for_port postgres_port
       launch_stellar_core true
       launch_heka_container if atlas
 
@@ -294,9 +295,10 @@ module StellarCoreCommander
     private
     def launch_stellar_core fresh
       $stderr.puts "launching stellar-core container #{container_name} from image #{@stellar_core_container.image}"
-      args = %W(--net host --volumes-from #{state_container_name})
+      args = %W(--volumes-from #{state_container_name})
       args += aws_credentials_volume
       args += shared_history_volume
+      args += %W(-p #{http_port}:#{http_port} -p #{peer_port}:#{peer_port})
       args += %W(--env-file stellar-core.env)
       command = %W(/start #{@name})
       if fresh
@@ -305,6 +307,7 @@ module StellarCoreCommander
       if @forcescp
         command += ["forcescp"]
       end
+
       @stellar_core_container.launch(args, command)
       @stellar_core_container
     end
@@ -314,6 +317,7 @@ module StellarCoreCommander
       (
       <<-EOS.strip_heredoc
         POSTGRES_PASSWORD=#{database_password}
+        POSTGRES_DB=#{database_name}
 
         ENVIRONMENT=scc
         CLUSTER_NAME=#{recipe_name}
