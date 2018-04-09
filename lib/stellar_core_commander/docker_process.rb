@@ -316,6 +316,7 @@ module StellarCoreCommander
     def config
       (
       <<-EOS.strip_heredoc
+        DATABASE=sqlite3://stellar.db
         POSTGRES_PASSWORD=#{database_password}
         POSTGRES_DB=#{database_name}
 
