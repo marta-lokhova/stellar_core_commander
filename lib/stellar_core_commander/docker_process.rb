@@ -72,9 +72,11 @@ module StellarCoreCommander
     Contract None => Any
     def setup!
       write_config
-
-      launch_state_container
+      launch_state_container unless is_sqlite
       wait_for_port postgres_port
+
+    Contract None => Any
+    def launch_process
       launch_stellar_core true
       launch_heka_container if atlas
 
@@ -331,6 +333,7 @@ module StellarCoreCommander
     def config
       (
       <<-EOS.strip_heredoc
+        DATABASE=#{database_url}
         POSTGRES_PASSWORD=#{database_password}
         POSTGRES_DB=#{database_name}
 

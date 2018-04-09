@@ -215,7 +215,6 @@ module StellarCoreCommander
       @process.crash
     end
 
-
     Contract Symbol => Process
     def get_process(name)
       @named[name].tap do |found|

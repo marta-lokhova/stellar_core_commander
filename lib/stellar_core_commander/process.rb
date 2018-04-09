@@ -210,6 +210,11 @@ module StellarCoreCommander
       end
     end
 
+    Contract None => Bool
+    def is_sqlite
+      database_url.start_with? "sqlite"
+    end
+
     Contract None => URI::Generic
     def database_uri
       URI.parse(database_url)
@@ -227,7 +232,14 @@ module StellarCoreCommander
 
     Contract None => Sequel::Database
     def database
-      @database ||= Sequel.connect(database_url)
+      # Sequel does not recognize `sqlite3`, but requires `sqlite` adapter instead
+      if is_sqlite
+        url = database_url.sub("sqlite3://", "sqlite://#{working_dir}/")
+      else
+        url = database_url
+      end
+
+      @database ||= Sequel.connect(url)
     end
 
     Contract None => Maybe[String]
@@ -641,17 +653,17 @@ module StellarCoreCommander
 
     Contract None => Num
     def account_count
-      database.fetch("SELECT count(*) FROM accounts").first[:count]
+      database.fetch("SELECT * FROM accounts").count
     end
 
     Contract None => Num
     def trustline_count
-      database.fetch("SELECT count(*) FROM trustlines").first[:count]
+      database.fetch("SELECT * FROM trustlines").count
     end
 
     Contract None => Num
     def offer_count
-      database.fetch("SELECT count(*) FROM offers").first[:count]
+      database.fetch("SELECT * FROM offers").count
     end
 
     Contract None => ArrayOf[Any]
