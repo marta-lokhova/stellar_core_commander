@@ -75,6 +75,7 @@ module StellarCoreCommander
       launch_state_container
       wait_for_port postgres_port
       launch_stellar_core true
+      sqlite_performance_pragmas
       launch_heka_container if atlas
 
       at_exit do

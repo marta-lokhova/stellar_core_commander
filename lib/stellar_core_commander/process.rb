@@ -667,6 +667,17 @@ module StellarCoreCommander
       database.fetch("SELECT * FROM trustlines ORDER BY accountid, issuer, assetcode LIMIT 10").all
     end
 
+    Contract None => Bool
+    def sqlite_performance_pragmas
+      db_connection = Sequel.connect("sqlite://stellar.db")
+      sync = db_connection.fetch("PRAGMA synchronous = OFF").all[0]
+      journal_mode = db_connection.fetch("PRAGMA journal_mode = OFF").all[0]
+
+      $stderr.puts "SQLite PRAGMAs: sync=#{sync}, journal_mode=#{journal_mode}"
+
+      sync == 0 and journal_mode.to_sym == :off
+    end
+
     Contract String, Any, Any => nil
     def check_equal(kind, x, y)
       raise UnexpectedDifference.new(kind, x, y) if x != y

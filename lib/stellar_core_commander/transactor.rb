@@ -236,6 +236,11 @@ module StellarCoreCommander
       @process.load_generation_complete
     end
 
+    Contract None => Bool
+    def sqlite_performance_pragmas
+      @process.sqlite_performance_pragmas
+    end
+
     Contract Symbol, Num, Num, Or[Symbol, Num], Num => Any
     def generate_load_and_await_completion(mode, accounts, txs, txrate, batchsize)
       runs = @process.load_generation_runs
