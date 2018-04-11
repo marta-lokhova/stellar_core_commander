@@ -231,7 +231,7 @@ module StellarCoreCommander
     Contract None => ArrayOf[String]
     def prepopulated_accounts_volume
       if File.directory?("/tmp/db")
-        $stderr.puts "DB snapshot found!"
+        $stderr.puts "DB snapshot found!!"
         ["-v", "/tmp/db/buckets:/buckets",
          "-v", "/tmp/db/stellar.db:/stellar.db",
          "-v", "/tmp/db/stellar.db-shm:/stellar.db-shm",
