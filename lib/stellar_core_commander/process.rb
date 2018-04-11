@@ -450,6 +450,8 @@ module StellarCoreCommander
     'Applied Txs',
     'Tx Rate',
     'Batchsize',
+    'Txs/Ledger Mean',
+    'Txs/Ledger StdDev',
     'Load Step Rate',
     'Load Step Mean',
     'Nominate Mean',
@@ -458,6 +460,7 @@ module StellarCoreCommander
     'Nominate StdDev',
     'Nominate Median',
     'Nominate 75th',
+    'Nominate 95th',
     'Nominate 99th',
     'Prepare Mean',
     'Prepare Min',
@@ -465,6 +468,7 @@ module StellarCoreCommander
     'Prepare StdDev',
     'Prepare Median',
     'Prepare 75th',
+    'Prepare 95th',
     'Prepare 99th',
     'Close Mean',
     'Close Min',
@@ -472,6 +476,7 @@ module StellarCoreCommander
     'Close StdDev',
     'Close Median',
     'Close 75th',
+    'Close 95th',
     'Close 99th',
     'Close Rate',
     ]
@@ -483,8 +488,16 @@ module StellarCoreCommander
       timestamp = Time.now.strftime('%Y-%m-%d_%H:%M:%S.%L')
 
       run_data = [timestamp, txtype, accounts, txs, transactions_applied, txrate, batchsize]
-      run_data.push(m["loadgen.step.submit"]["mean_rate"])
-      run_data.push(m["loadgen.step.submit"]["mean"])
+      run_data.push(m["ledger.transaction.count"]["mean"])
+      run_data.push(m["ledger.transaction.count"]["stddev"])
+
+      if m.key?("loadgen.step.submit")
+        run_data.push(m["loadgen.step.submit"]["mean_rate"])
+        run_data.push(m["loadgen.step.submit"]["mean"])
+      else
+        run_data.push("NA")
+        run_data.push("NA")
+      end
 
       metric_fields = ["scp.timing.nominated", "scp.timing.externalized", "ledger.ledger.close"]
       metric_fields.each { |field|
@@ -494,6 +507,7 @@ module StellarCoreCommander
         run_data.push(m[field]["stddev"])
         run_data.push(m[field]["median"])
         run_data.push(m[field]["75%"])
+        run_data.push(m[field]["95%"])
         run_data.push(m[field]["99%"])
       }
 
