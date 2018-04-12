@@ -39,7 +39,9 @@ module StellarCoreCommander
     Contract None => Any
     def launch_state_container
       $stderr.puts "launching state container #{state_container_name} from image #{@state_container.image}"
-      @state_container.launch(%W(-p #{postgres_port}:5432 --env-file stellar-core.env),
+      args = %W(-p #{postgres_port}:5432 --env-file stellar-core.env)
+      args += prepopulated_accounts_volume
+      @state_container.launch(args,
        %W(postgres --fsync=off --full_page_writes=off --shared_buffers=512MB --work_mem=32MB))
     end
 
@@ -311,7 +313,6 @@ module StellarCoreCommander
       args = %W(--volumes-from #{state_container_name})
       args += aws_credentials_volume
       args += shared_history_volume
-      args += prepopulated_accounts_volume
       args += %W(-p #{http_port}:#{http_port} -p #{peer_port}:#{peer_port})
       args += %W(--env-file stellar-core.env)
       command = %W(/start #{@name})
