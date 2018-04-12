@@ -237,7 +237,6 @@ module StellarCoreCommander
        "-v", "/tmp/db/stellar.db:/stellar.db",
        "-v", "/tmp/db/stellar.db-shm:/stellar.db-shm",
        "-v", "/tmp/db/stellar.db-wal:/stellar.db-wal"]
-      end
     end
 
     Contract None => String
