@@ -74,7 +74,7 @@ module StellarCoreCommander
 
       launch_state_container
       wait_for_port postgres_port
-      launch_stellar_core true
+      launch_stellar_core false
       sqlite_performance_pragmas
       launch_heka_container if atlas
 
@@ -229,6 +229,19 @@ module StellarCoreCommander
       end
     end
 
+    Contract None => ArrayOf[String]
+    def prepopulated_accounts_volume
+      if File.directory?("/tmp/db")
+        $stderr.puts "DB snapshot found!"
+        ["-v", "/tmp/db/buckets:/buckets",
+         "-v", "/tmp/db/stellar.db:/stellar.db",
+         "-v", "/tmp/db/stellar.db-shm:/stellar.db-shm",
+         "-v", "/tmp/db/stellar.db-wal:/stellar.db-wal"]
+      else
+        []
+      end
+    end
+
     Contract None => String
     def history_get_command
       cmds = Set.new
@@ -299,6 +312,7 @@ module StellarCoreCommander
       args = %W(--volumes-from #{state_container_name})
       args += aws_credentials_volume
       args += shared_history_volume
+      args += prepopulated_accounts_volume
       args += %W(-p #{http_port}:#{http_port} -p #{peer_port}:#{peer_port})
       args += %W(--env-file stellar-core.env)
       command = %W(/start #{@name})
