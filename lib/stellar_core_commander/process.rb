@@ -225,9 +225,13 @@ module StellarCoreCommander
       database_uri.path[1..-1]
     end
 
-    Contract None => Sequel::Database
-    def database
-      @database ||= Sequel.connect(database_url)
+    Contract Maybe[Bool] => Sequel::Database
+    def database(sqlite=true)
+      if sqlite
+        @database ||= Sequel.connect("sqlite://stellar.db")
+      else
+        @database ||= Sequel.connect(database_url)
+      end
     end
 
     Contract None => Maybe[String]
