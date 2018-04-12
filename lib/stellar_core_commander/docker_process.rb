@@ -233,7 +233,7 @@ module StellarCoreCommander
     Contract None => ArrayOf[String]
     def prepopulated_accounts_volume
       $stderr.puts "DB snapshot found!!"
-      ["-v", "/tmp/db/buckets:/buckets",
+      ["-v", "/tmp/db/buckets:/data/buckets",
        "-v", "/tmp/db/stellar.db:/stellar.db",
        "-v", "/tmp/db/stellar.db-shm:/stellar.db-shm",
        "-v", "/tmp/db/stellar.db-wal:/stellar.db-wal"]
