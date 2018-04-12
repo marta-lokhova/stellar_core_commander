@@ -101,6 +101,7 @@ module StellarCoreCommander
       debug:               Maybe[Bool],
       wait_timeout:        Maybe[Num],
       network_passphrase:  Maybe[String],
+      mount_snapshot:      Maybe[Bool]
     } => Any)
     def initialize(params)
       #config
@@ -130,6 +131,7 @@ module StellarCoreCommander
       @debug              = params[:debug]
       @wait_timeout       = params[:wait_timeout] || 10
       @network_passphrase = params[:network_passphrase] || Stellar::Networks::TESTNET
+      @mount_snapshot     = params[:mount_snapshot] || false
 
       # state
       @unverified   = []

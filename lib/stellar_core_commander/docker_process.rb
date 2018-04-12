@@ -40,7 +40,9 @@ module StellarCoreCommander
     def launch_state_container
       $stderr.puts "launching state container #{state_container_name} from image #{@state_container.image}"
       args = %W(-p #{postgres_port}:5432 --env-file stellar-core.env)
-      args += prepopulated_accounts_volume
+      if @mount_snapshot
+        args += prepopulated_accounts_volume
+      end
       @state_container.launch(args,
        %W(postgres --fsync=off --full_page_writes=off --shared_buffers=512MB --work_mem=32MB))
     end
@@ -232,11 +234,11 @@ module StellarCoreCommander
 
     Contract None => ArrayOf[String]
     def prepopulated_accounts_volume
-      $stderr.puts "DB snapshot found!!"
-      ["-v", "/tmp/db/buckets:/data/buckets",
-       "-v", "/tmp/db/stellar.db:/stellar.db",
-       "-v", "/tmp/db/stellar.db-shm:/stellar.db-shm",
-       "-v", "/tmp/db/stellar.db-wal:/stellar.db-wal"]
+      accounts = ENV['NUM_ACCOUNTS'] || "100000"
+      ["-v", "/tmp/db/#{accounts}_accounts/buckets:/data/buckets",
+       "-v", "/tmp/db/#{accounts}_accounts/stellar.db:/stellar.db",
+       "-v", "/tmp/db/#{accounts}_accounts/stellar.db-shm:/stellar.db-shm",
+       "-v", "/tmp/db/#{accounts}_accounts/stellar.db-wal:/stellar.db-wal"]
     end
 
     Contract None => String
