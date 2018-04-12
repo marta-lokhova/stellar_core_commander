@@ -269,7 +269,7 @@ module StellarCoreCommander
 
     Contract String, Symbol, Num, Num, Or[Symbol, Num], Num => Any
     def record_performance_metrics(fname, txtype, accounts, txs, txrate, batchsize)
-        @process.record_performance_metrics fname, txtype, accounts, txs, txrate, batchsize
+        @commander.record_performance_metrics fname, txtype, accounts, txs, txrate, batchsize
     end
 
     Contract Symbol, ArrayOf[Symbol], Hash => Process
