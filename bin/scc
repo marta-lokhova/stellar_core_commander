@@ -88,7 +88,7 @@ def run
   $stdout.puts "running recipe"
   transactor.run_recipe recipe
   $stdout.puts "recipe finished, closing ledger"
-  transactor.close_ledger
+  #transactor.close_ledger
   $stdout.puts "ledger closed"
 
 
