@@ -22,7 +22,6 @@ module StellarCoreCommander
       @heka_container = Container.new(@cmd, docker_args, "stellar/heka", heka_container_name)
       @state_container = Container.new(@cmd, docker_args, params[:docker_state_image], state_container_name)
       @stellar_core_container = Container.new(@cmd, docker_args, params[:docker_core_image], container_name)
-      end
     end
 
     Contract None => Num
