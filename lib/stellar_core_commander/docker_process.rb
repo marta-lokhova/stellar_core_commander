@@ -40,9 +40,7 @@ module StellarCoreCommander
     def launch_state_container
       $stderr.puts "launching state container #{state_container_name} from image #{@state_container.image}"
       args = %W(-p #{postgres_port}:5432 --env-file stellar-core.env)
-      if @mount_snapshot
-        args += prepopulated_accounts_volume
-      end
+      args += prepopulated_accounts_volume
       @state_container.launch(args,
        %W(postgres --fsync=off --full_page_writes=off --shared_buffers=512MB --work_mem=32MB))
     end
