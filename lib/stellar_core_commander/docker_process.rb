@@ -231,11 +231,12 @@ module StellarCoreCommander
 
     Contract None => ArrayOf[String]
     def prepopulated_accounts_volume
+      mount_dir = "/home/marta/tmp"
       accounts = ENV['NUM_ACCOUNTS'] || "100000"
-      ["-v", "/tmp/db/#{accounts}_accounts/buckets:/data/buckets",
-       "-v", "/tmp/db/#{accounts}_accounts/stellar.db:/stellar.db",
-       "-v", "/tmp/db/#{accounts}_accounts/stellar.db-shm:/stellar.db-shm",
-       "-v", "/tmp/db/#{accounts}_accounts/stellar.db-wal:/stellar.db-wal"]
+      ["-v", "#{mount_dir}/#{accounts}_accounts/buckets:/data/buckets",
+       "-v", "#{mount_dir}/#{accounts}_accounts/stellar.db:/stellar.db",
+       "-v", "#{mount_dir}/#{accounts}_accounts/stellar.db-shm:/stellar.db-shm",
+       "-v", "#{mount_dir}/#{accounts}_accounts/stellar.db-wal:/stellar.db-wal"]
     end
 
     Contract None => String
