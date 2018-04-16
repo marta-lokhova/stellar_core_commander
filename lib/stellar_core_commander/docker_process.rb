@@ -110,6 +110,7 @@ module StellarCoreCommander
     Contract None => Any
     def cleanup
       database.disconnect
+      dump_system_stats
       shutdown_core_container
       shutdown_state_container
       shutdown_heka_container if atlas
@@ -138,6 +139,20 @@ module StellarCoreCommander
     Contract None => Any
     def dump_logs
       @stellar_core_container.logs
+    end
+
+    Contract None => Any
+    def dump_system_stats
+      fname = "#{working_dir}/../proc-stats-#{Time.now.to_i}-#{rand 100000}.sql"
+      uptime = Time.now - IO.read("/proc/uptime").split[0].to_f
+      idletime = Time.now - IO.read("/proc/uptime").split[1].to_f
+
+      meminfo = IO.read("/proc/meminfo")
+      netstat = IO.read("/proc/net/dev")
+      stat = IO.read("/proc/stat")
+
+      File.open(fname, 'w') {|f| f.write("Uptime: #{uptime} \n Idle time: #{idletime} \n
+        Mem Info: #{meminfo} \n Net stat: #{netstat} \n Other stats: #{stat}")}
     end
 
     Contract None => Any
