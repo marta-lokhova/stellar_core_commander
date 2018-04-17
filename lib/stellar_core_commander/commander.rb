@@ -69,6 +69,11 @@ module StellarCoreCommander
     end
 
     Contract None => ArrayOf[Process]
+    def get_all_processes
+      @processes
+    end
+
+    Contract None => ArrayOf[Process]
     def start_all_processes
       stopped = @processes.select(&:stopped?)
       return [] if stopped.empty? 

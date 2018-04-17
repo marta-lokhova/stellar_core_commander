@@ -225,10 +225,23 @@ module StellarCoreCommander
       end
     end
 
-    Contract Symbol, Num, Num, Or[Symbol, Num], Num => Any
-    def start_load_generation(mode='create', accounts=10000000, txs=10000000, txrate=500, batchsize=100)
+    Contract Symbol, Num, Num, Or[Symbol, Num], Num, Bool => Any
+    def start_load_generation(mode='create', accounts=10000000, txs=10000000, txrate=500, batchsize=100, split_load=false)
       $stderr.puts "starting load generation: #{mode} mode, #{accounts} accounts, #{txs} txs, #{txrate} tx/s, #{batchsize} batchsize"
-      @process.start_load_generation mode, accounts, txs, txrate, batchsize
+      if split_load
+        processes = @commander.get_all_processes
+        processes.each_with_index do |p, index|
+          chunk = lambda {|total| (total / processes.size).to_f.floor}
+          accounts_chunk = chunk.call(accounts)
+          txs_chunk = chunk.call(txs)
+          split_txrate = chunk.call(txrate) || 1
+
+          $stderr.puts "Trigerring load generation on #{p.name} on #{accounts_chunk} accounts with #{txs_chunk} txs, #{split_txrate} txrate."
+          p.start_load_generation mode, accounts_chunk, index * accounts_chunk, txs_chunk, split_txrate, batchsize
+        end
+      else
+        @process.start_load_generation mode, accounts, 0, txs, txrate, batchsize
+      end
     end
 
     Contract None => Bool
@@ -241,19 +254,33 @@ module StellarCoreCommander
       @process.sqlite_performance_pragmas
     end
 
-    Contract Symbol, Num, Num, Or[Symbol, Num], Num => Any
-    def generate_load_and_await_completion(mode, accounts, txs, txrate, batchsize)
-      runs = @process.load_generation_runs
-      start_load_generation mode, accounts, txs, txrate, batchsize
+    Contract Symbol, Num, Num, Or[Symbol, Num], Num, Bool => Any
+    def generate_load_and_await_completion(mode, accounts, txs, txrate, batchsize, split_load=false)
+      if split_load
+        processes = @commander.get_all_processes
+      else
+        processes = [@process]
+      end  
+
+      num_nodes = processes.size
+      runs = 0
+      processes.each {|p| runs += p.load_generation_runs}
+
+      start_load_generation mode, accounts, txs, txrate, batchsize, split_load
       num_retries = if mode == :create then accounts else txs end
 
       retry_until_true retries: num_retries do
-        txs = @process.transactions_applied
-        r = @process.load_generation_runs
-        tps = @process.transactions_per_second
-        ops = @process.operations_per_second
-        $stderr.puts "loadgen runs: #{r}, ledger: #{ledger_num}, accounts: #{accounts}, txs: #{txs}, actual tx/s: #{tps} op/s: #{ops}"
-        r != runs
+        total_runs = 0
+        processes.each do |p|
+          txs = p.transactions_applied
+          r = p.load_generation_runs
+          tps = p.transactions_per_second
+          ops = p.operations_per_second
+          $stderr.puts "#{p.name}: loadgen runs: #{r}, ledger: #{ledger_num}, accounts: #{accounts}, txs: #{txs}, actual tx/s: #{tps} op/s: #{ops}"
+          total_runs += r
+        end
+
+        total_runs == runs + num_nodes  #ensure each node completed a run
       end
     end
 

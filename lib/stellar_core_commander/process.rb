@@ -546,9 +546,9 @@ module StellarCoreCommander
       true
     end
 
-    Contract Symbol, Num, Num, Or[Symbol, Num], Num => Any
-    def start_load_generation(mode, accounts, txs, txrate, batchsize)
-      server.get("/generateload?mode=#{mode}&accounts=#{accounts}&txs=#{txs}&txrate=#{txrate}&batchsize=#{batchsize}")
+    Contract Symbol, Num, Num, Num, Or[Symbol, Num], Num => Any
+    def start_load_generation(mode, accounts, offset, txs, txrate, batchsize)
+      server.get("/generateload?mode=#{mode}&accounts=#{accounts}&offset=#{offset}&txs=#{txs}&txrate=#{txrate}&batchsize=#{batchsize}")
     end
 
     Contract None => Num
