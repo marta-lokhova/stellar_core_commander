@@ -234,7 +234,7 @@ module StellarCoreCommander
           chunk = lambda {|total| (total / processes.size).to_f.floor}
           accounts_chunk = chunk.call(accounts)
           txs_chunk = chunk.call(txs)
-          split_txrate = chunk.call(txrate) || 1
+          split_txrate = [chunk.call(txrate), 1].max
 
           $stderr.puts "Trigerring load generation on #{p.name} on #{accounts_chunk} accounts with #{txs_chunk} txs, #{split_txrate} txrate."
           p.start_load_generation mode, accounts_chunk, index * accounts_chunk, txs_chunk, split_txrate, batchsize
