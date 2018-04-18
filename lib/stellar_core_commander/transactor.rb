@@ -236,7 +236,7 @@ module StellarCoreCommander
           txs_chunk = chunk.call(txs)
           split_txrate = [chunk.call(txrate), 1].max
 
-          $stderr.puts "Trigerring load generation on #{p.name} on #{accounts_chunk} accounts with #{txs_chunk} txs, #{split_txrate} txrate."
+          $stderr.puts "Trigerring load generation on #{p.name} on #{index * accounts_chunk}-#{index * accounts_chunk + accounts_chunk} accounts with #{txs_chunk} txs, #{split_txrate} txrate."
           p.start_load_generation mode, accounts_chunk, index * accounts_chunk, txs_chunk, split_txrate, batchsize
         end
       else
