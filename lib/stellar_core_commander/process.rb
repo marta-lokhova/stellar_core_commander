@@ -452,6 +452,7 @@ module StellarCoreCommander
     'Nominate StdDev',
     'Nominate Median',
     'Nominate 75th',
+    'Nominate 95th',
     'Nominate 99th',
     'Prepare Mean',
     'Prepare Min',
@@ -459,6 +460,7 @@ module StellarCoreCommander
     'Prepare StdDev',
     'Prepare Median',
     'Prepare 75th',
+    'Prepare 95th',
     'Prepare 99th',
     'Close Mean',
     'Close Min',
@@ -466,6 +468,7 @@ module StellarCoreCommander
     'Close StdDev',
     'Close Median',
     'Close 75th',
+    'Close 95th',
     'Close 99th',
     'Close Rate',
     ]
@@ -496,6 +499,7 @@ module StellarCoreCommander
         run_data.push(m[field]["stddev"])
         run_data.push(m[field]["median"])
         run_data.push(m[field]["75%"])
+        run_data.push(m[field]["95%"])
         run_data.push(m[field]["99%"])
       }
 
