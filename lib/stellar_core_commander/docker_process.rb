@@ -75,6 +75,7 @@ module StellarCoreCommander
       write_config
       launch_state_container  # TODO[mlokhova] unless is_sqlite remove when Dockerfile is updated not to wait for psql
       wait_for_port postgres_port
+    end  
 
     Contract None => Any
     def launch_process
