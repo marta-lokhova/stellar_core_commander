@@ -97,7 +97,8 @@ module StellarCoreCommander
 
     Contract None => Any
     def launch_process
-      launch_stellar_core is_sqlite
+      fresh = is_sqlite && @mounted_db.empty?
+      launch_stellar_core fresh
     end
 
     Contract None => Bool
@@ -268,6 +269,15 @@ module StellarCoreCommander
       end
     end
 
+    Contract None => ArrayOf[String]
+    def prepopulated_accounts_volume
+      $stderr.puts "Mounted directory is: #{@mounted_db}"
+      ["-v", "#{@mounted_db}/buckets:/data/buckets",
+       "-v", "#{@mounted_db}/stellar.db:/stellar.db",
+       "-v", "#{@mounted_db}/stellar.db-shm:/stellar.db-shm",
+       "-v", "#{@mounted_db}/stellar.db-wal:/stellar.db-wal"]
+    end
+
     Contract None => String
     def history_get_command
       cmds = Set.new
@@ -350,6 +360,7 @@ module StellarCoreCommander
       args += %W(--volumes-from #{state_container_name}) unless is_sqlite
       args += aws_credentials_volume
       args += shared_history_volume
+      args += prepopulated_accounts_volume unless fresh
       args += %W(-p #{http_port}:#{http_port} -p #{peer_port}:#{peer_port})
       args += %W(--env-file stellar-core.env)
       command = %W(/start #{@name})
