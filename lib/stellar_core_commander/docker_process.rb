@@ -24,6 +24,7 @@ module StellarCoreCommander
       @state_container = Container.new(@cmd, docker_args, params[:docker_state_image], state_container_name) do
         dump_database
       end
+      @database_password ||= SecureRandom.hex
       @stellar_core_container = Container.new(@cmd, docker_args, params[:docker_core_image], container_name) do
         dump_data
       end
@@ -72,7 +73,7 @@ module StellarCoreCommander
     Contract None => Any
     def setup!
       write_config
-      launch_state_container unless is_sqlite
+      launch_state_container  # TODO[mlokhova] unless is_sqlite remove when Dockerfile is updated not to wait for psql
       wait_for_port postgres_port
 
     Contract None => Any
@@ -173,7 +174,6 @@ module StellarCoreCommander
 
     Contract None => String
     def default_database_url
-      @database_password ||= SecureRandom.hex
       "postgres://postgres:#{@database_password}@#{docker_host}:#{postgres_port}/stellar"
     end
 
@@ -323,13 +323,16 @@ module StellarCoreCommander
     def launch_stellar_core fresh
       $stderr.puts "launching stellar-core container #{container_name} from image #{@stellar_core_container.image}"
       args = []
-      args += %W(--net host --volumes-from #{state_container_name}) unless is_sqlite
+      args += %W(--net host --volumes-from #{state_container_name}) #TODO[mlokhova] add `unless is_sqlite` when psql dependency in Docker is resolved
       args += aws_credentials_volume
       args += shared_history_volume
       args += %W(-p #{http_port}:#{http_port} -p #{peer_port}:#{peer_port})
       args += prepopulated_accounts_volume unless @mounted_db.empty?
       args += %W(--env-file stellar-core.env)
       command = %W(/start #{@name})
+      if is_sqlite
+        command += ["nopsql"]
+      end
       if fresh
         command += ["fresh", "skipstart"]
       end
@@ -346,8 +349,9 @@ module StellarCoreCommander
       (
       <<-EOS.strip_heredoc
         DATABASE=#{database_url}
-        POSTGRES_PASSWORD=#{database_password}
         POSTGRES_DB=#{database_name}
+        POSTGRES_PASSWORD=#{@database_password}
+
 
         ENVIRONMENT=scc
         CLUSTER_NAME=#{recipe_name}
