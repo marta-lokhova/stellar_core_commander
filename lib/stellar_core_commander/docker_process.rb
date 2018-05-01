@@ -326,7 +326,7 @@ module StellarCoreCommander
       args += aws_credentials_volume
       args += shared_history_volume
       args += %W(-p #{http_port}:#{http_port} -p #{peer_port}:#{peer_port})
-      args += prepopulated_accounts_volume
+      args += prepopulated_accounts_volume if !@mounted_db.empty?
       args += %W(--env-file stellar-core.env)
       command = %W(/start #{@name})
       if fresh
