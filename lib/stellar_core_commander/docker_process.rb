@@ -77,7 +77,8 @@ module StellarCoreCommander
 
     Contract None => Any
     def launch_process
-      launch_stellar_core true
+      fresh_container = @mounted_db.empty?
+      launch_stellar_core fresh_container
       launch_heka_container if atlas
 
       at_exit do
@@ -245,6 +246,15 @@ module StellarCoreCommander
       end
     end
 
+    Contract None => ArrayOf[String]
+    def prepopulated_accounts_volume
+      mount_dir = @mounted_db
+      ["-v", "#{mount_dir}/buckets:/data/buckets",
+       "-v", "#{mount_dir}/stellar.db:/stellar.db",
+       "-v", "#{mount_dir}/stellar.db-shm:/stellar.db-shm",
+       "-v", "#{mount_dir}/stellar.db-wal:/stellar.db-wal"]
+    end
+
     Contract None => String
     def history_get_command
       cmds = Set.new
@@ -316,6 +326,7 @@ module StellarCoreCommander
       args += aws_credentials_volume
       args += shared_history_volume
       args += %W(-p #{http_port}:#{http_port} -p #{peer_port}:#{peer_port})
+      args += prepopulated_accounts_volume
       args += %W(--env-file stellar-core.env)
       command = %W(/start #{@name})
       if fresh
