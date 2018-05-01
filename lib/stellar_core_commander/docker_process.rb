@@ -322,11 +322,12 @@ module StellarCoreCommander
     private
     def launch_stellar_core fresh
       $stderr.puts "launching stellar-core container #{container_name} from image #{@stellar_core_container.image}"
-      args = %W(--volumes-from #{state_container_name})
+      args = []
+      args += %W(--net host --volumes-from #{state_container_name}) unless is_sqlite
       args += aws_credentials_volume
       args += shared_history_volume
       args += %W(-p #{http_port}:#{http_port} -p #{peer_port}:#{peer_port})
-      args += prepopulated_accounts_volume if !@mounted_db.empty?
+      args += prepopulated_accounts_volume unless @mounted_db.empty?
       args += %W(--env-file stellar-core.env)
       command = %W(/start #{@name})
       if fresh
