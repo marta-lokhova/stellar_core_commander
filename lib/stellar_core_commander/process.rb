@@ -105,6 +105,7 @@ module StellarCoreCommander
       network_passphrase:  Maybe[String],
       protocol_version:    Maybe[Or[Num, String]],
       delay_upgrade:       Maybe[Bool],
+      mounted_db:          Maybe[String]
     } => Any)
     def initialize(params)
       #config
@@ -138,6 +139,7 @@ module StellarCoreCommander
       @network_passphrase = params[:network_passphrase] || Stellar::Networks::TESTNET
       @protocol_version   = params[:protocol_version] || "latest"
       @delay_upgrade      = params[:delay_upgrade] || false
+      @mounted_db         = params[:mounted_db] || ""
 
       # state
       @unverified   = []
@@ -154,6 +156,11 @@ module StellarCoreCommander
 
       if not @history_peers.include? @name
         @history_peers = @history_peers + [@name]
+      end
+
+      # Mounting DB snapshot only works with SQLite.
+      if not @mounted_db.empty? and not is_sqlite
+        raise "Mount DB option is only supported with SQLite."
       end
 
       @server = Faraday.new(url: "http://#{hostname}:#{http_port}") do |conn|

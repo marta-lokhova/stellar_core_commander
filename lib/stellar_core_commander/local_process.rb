@@ -7,6 +7,7 @@ module StellarCoreCommander
 
     def initialize(params)
       raise "`host` param is unsupported on LocalProcess, please use `-p docker` for this recipe." if params[:host]
+      raise "`mounted_db` param is unsupported on LocalProcess, please use `-p docker` for this recipe" if params[:mounted_db]
       $stderr.puts "Warning: Ignoring `atlas` param since LocalProcess doesn't support this." if params[:atlas]
 
       super
