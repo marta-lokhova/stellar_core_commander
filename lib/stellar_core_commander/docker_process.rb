@@ -73,12 +73,12 @@ module StellarCoreCommander
     Contract None => Any
     def setup!
       write_config
+
+
       launch_state_container  # TODO[mlokhova] unless is_sqlite remove when Dockerfile is updated not to wait for psql
       wait_for_port postgres_port
-    end  
 
-    Contract None => Any
-    def launch_process
+
       fresh_container = @mounted_db.empty?
       launch_stellar_core fresh_container
       launch_heka_container if atlas
@@ -99,7 +99,11 @@ module StellarCoreCommander
 
     Contract None => Any
     def launch_process
-      launch_stellar_core false
+      if is_sqlite and @mounted_db.empty?
+        launch_stellar_core true
+      else
+        launch_stellar_core false
+      end  
     end
 
     Contract None => Bool
@@ -324,16 +328,17 @@ module StellarCoreCommander
     def launch_stellar_core fresh
       $stderr.puts "launching stellar-core container #{container_name} from image #{@stellar_core_container.image}"
       args = []
-      args += %W(--net host --volumes-from #{state_container_name}) #TODO[mlokhova] add `unless is_sqlite` when psql dependency in Docker is resolved
+      args += %W(--net host --volumes-from #{state_container_name}) unless is_sqlite #TODO[mlokhova] add `unless is_sqlite` when psql dependency in Docker is resolved
       args += aws_credentials_volume
       args += shared_history_volume
       args += %W(-p #{http_port}:#{http_port} -p #{peer_port}:#{peer_port})
       args += prepopulated_accounts_volume unless @mounted_db.empty?
       args += %W(--env-file stellar-core.env)
       command = %W(/start #{@name})
-      if is_sqlite
-        command += ["nopsql"]
-      end
+      # if is_sqlite
+      #   puts "Adding NOPSQL"
+      #   command += ["nopsql"]
+      # end
       if fresh
         command += ["fresh", "skipstart"]
       end
@@ -350,7 +355,7 @@ module StellarCoreCommander
       (
       <<-EOS.strip_heredoc
         DATABASE=#{database_url}
-        POSTGRES_DB=#{database_name}
+        POSTGRES_DB=#{database_name unless is_sqlite}
         POSTGRES_PASSWORD=#{@database_password}
 
 

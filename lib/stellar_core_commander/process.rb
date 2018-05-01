@@ -224,7 +224,7 @@ module StellarCoreCommander
 
     Contract None => URI::Generic
     def database_uri
-      URI.parse(database_url)
+      URI.parse(default_database_url)
     end
 
     Contract None => Maybe[String]
