@@ -437,6 +437,8 @@ module StellarCoreCommander
         NETWORK_PASSPHRASE=#{network_passphrase}
 
         INVARIANT_CHECKS=#{invariants.to_s}
+
+        AUTOMATIC_MAINTENANCE_PERIOD=30
       EOS
       ) + history_get_command + history_put_commands
     end
