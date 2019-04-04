@@ -438,7 +438,7 @@ module StellarCoreCommander
 
         INVARIANT_CHECKS=#{invariants.to_s}
 
-        AUTOMATIC_MAINTENANCE_PERIOD=30
+        AUTOMATIC_MAINTENANCE_PERIOD=300
       EOS
       ) + history_get_command + history_put_commands
     end
